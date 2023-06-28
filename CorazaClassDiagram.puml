@@ -1,0 +1,86 @@
+@startuml
+namespace coraza {
+    interface AuditLogConfig  {
+        + LogRelevantOnly() AuditLogConfig
+        + WithParts(parts types.AuditLogParts) AuditLogConfig
+
+    }
+    interface WAF  {
+        + NewTransaction() types.Transaction
+        + NewTransactionWithID(id string) types.Transaction
+
+    }
+    interface WAFConfig  {
+        + WithDirectives(directives string) WAFConfig
+        + WithDirectivesFromFile(path string) WAFConfig
+        + WithRequestBodyAccess() WAFConfig
+        + WithRequestBodyLimit(limit int) WAFConfig
+        + WithRequestBodyInMemoryLimit(limit int) WAFConfig
+        + WithResponseBodyAccess() WAFConfig
+        + WithResponseBodyLimit(limit int) WAFConfig
+        + WithResponseBodyMimeTypes(mimeTypes []string) WAFConfig
+        + WithDebugLogger(logger debuglog.Logger) WAFConfig
+        + WithErrorCallback(logger <font color=blue>func</font>(types.MatchedRule) ) WAFConfig
+        + WithRootFS(fs fs.FS) WAFConfig
+
+    }
+    class auditLogConfig << (S,Aquamarine) >> {
+        - relevantOnly bool
+        - parts types.AuditLogParts
+        - writer plugintypes.AuditLogWriter
+
+        - clone() *auditLogConfig
+
+        + LogRelevantOnly() AuditLogConfig
+        + WithParts(parts types.AuditLogParts) AuditLogConfig
+
+    }
+    class wafConfig << (S,Aquamarine) >> {
+        - rules []wafRule
+        - auditLog *auditLogConfig
+        - requestBodyAccess bool
+        - requestBodyLimit *int
+        - requestBodyInMemoryLimit *int
+        - responseBodyAccess bool
+        - responseBodyLimit *int
+        - responseBodyMimeTypes []string
+        - debugLogger debuglog.Logger
+        - errorCallback <font color=blue>func</font>(types.MatchedRule) 
+        - fsRoot fs.FS
+
+        - clone() *wafConfig
+
+        + WithRules(rules ...*corazawaf.Rule) WAFConfig
+        + WithDirectivesFromFile(path string) WAFConfig
+        + WithDirectives(directives string) WAFConfig
+        + WithRequestBodyAccess() WAFConfig
+        + WithResponseBodyAccess() WAFConfig
+        + WithDebugLogger(logger debuglog.Logger) WAFConfig
+        + WithErrorCallback(logger <font color=blue>func</font>(types.MatchedRule) ) WAFConfig
+        + WithRootFS(fs fs.FS) WAFConfig
+        + WithRequestBodyLimit(limit int) WAFConfig
+        + WithRequestBodyInMemoryLimit(limit int) WAFConfig
+        + WithResponseBodyLimit(limit int) WAFConfig
+        + WithResponseBodyMimeTypes(mimeTypes []string) WAFConfig
+
+    }
+    class wafRule << (S,Aquamarine) >> {
+        - rule *corazawaf.Rule
+        - str string
+        - file string
+
+    }
+    class wafWrapper << (S,Aquamarine) >> {
+        - waf *corazawaf.WAF
+
+        + NewTransaction() types.Transaction
+        + NewTransactionWithID(id string) types.Transaction
+
+    }
+}
+
+"coraza.AuditLogConfig" <|-- "coraza.auditLogConfig"
+"coraza.WAFConfig" <|-- "coraza.wafConfig"
+"coraza.WAF" <|-- "coraza.wafWrapper"
+
+@enduml
